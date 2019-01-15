@@ -11,12 +11,16 @@ module JSONAPI
         Document.ensure!(document.is_a?(Hash),
                          'A JSON object MUST be at the root of every JSONAPI ' \
                          'request and response containing data.')
-        Document.ensure!(document.keys == ['data'].freeze &&
-                         document['data'].is_a?(Hash),
-                         'The request MUST include a single resource object ' \
-                         'as primary data.')
-        Document.parse_primary_resource!(document['data'])
-      end
+        if document['data'].is_a?(Array)
+          document['data'].each {|doc| Document.parse_primary_resource!(doc) }
+        else
+          Document.ensure!(document.keys == ['data'].freeze &&
+                           document['data'].is_a?(Hash),
+                           'The request MUST include a single resource object ' \
+                           'as primary data.')
+          Document.parse_primary_resource!(document['data'])
+          end
+        end
     end
   end
 end
